@@ -1,0 +1,102 @@
+Passo 1: Conectar ao servidor via PuTTY
+1.	Baixe e instale o PuTTY se ainda não o tiver instalado.
+2.	Abra o PuTTY e insira o endereço IP do seu servidor Debian 12 no campo "Host Name (or IP address)".
+3.	Clique em "Open" e, se solicitado, aceite a chave de segurança.
+4.	Faça login com seu nome de usuário e senha.
+Passo 2: Atualizar o sistema
+1.	Antes de instalar qualquer software, é uma boa prática atualizar a lista de pacotes e atualizar os pacotes instalados:
+ 
+sh
+Copiar código
+
+sudo apt update
+sudo apt upgrade -y
+
+Passo 3: Adicionar o repositório para a versão mais recente do Node.js
+Adicione o repositório para a versão mais recente do Node.js:
+ 
+sh
+Copiar código
+
+curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+
+Passo 4: Instalar a versão mais recente do Node.js
+Instale o Node.js versão 18:
+ 
+sh
+Copiar código
+
+sudo apt-get install -y nodejs
+
+Passo 5: Verificar a instalação do Node.js
+Verifique se a nova versão do Node.js foi instalada corretamente:
+ 
+sh
+Copiar código
+
+node -v
+npm -v
+
+Você deve ver a versão 18.x do Node.js.
+Passo 5: Reinstalar o Node-RED
+Caso o Node-RED já esteja instalado, você pode precisar reinstalá-lo:
+ 
+sh
+Copiar código
+
+sudo npm install -g --unsafe-perm node-red
+
+
+Passo 4: Instalar o Node-RED
+1.	Com o Node.js e o npm instalados, você pode instalar o Node-RED globalmente usando npm:
+ 
+sh
+Copiar código
+
+sudo npm install -g --unsafe-perm node-red
+
+2.	Verifique a instalação do Node-RED:
+ 
+sh
+Copiar código
+
+node-red –version
+
+Passo 5: Iniciar o Node-RED
+1.	Para iniciar o Node-RED, simplesmente execute:
+ 
+sh
+Copiar código
+
+node-red
+
+2.	O Node-RED será iniciado e você verá mensagens no terminal indicando que ele está funcionando. Por padrão, ele estará acessível no navegador na porta 1880. Por exemplo:
+ 
+arduino
+Copiar código
+
+http://<endereço_IP_do_seu_servidor>:1880
+
+Passo 6: Configurar o Node-RED como um serviço (opcional)
+1.	Para garantir que o Node-RED inicie automaticamente na inicialização do sistema, você pode configurá-lo como um serviço:
+ 
+sh
+Copiar código
+
+sudo npm install -g pm2
+sudo pm2 start /usr/bin/node-red -- -v
+sudo pm2 save
+sudo pm2 startup system
+
+
+2.	Copie e execute o comando que o pm2 fornecerá para configurar o Node-RED para iniciar automaticamente.
+Passo 7: Acessar a interface do Node-RED
+1.	Abra o navegador da web e digite:
+arduino
+Copiar código
+
+http://192.168.1.XXX:1880
+
+2.	Você deverá ver a interface do Node-RED.
+Pronto! Agora você tem o Node-RED instalado e em execução no seu servidor Debian 12. Se precisar de mais alguma ajuda, estarei à disposição.
+
