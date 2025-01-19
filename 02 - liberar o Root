@@ -1,0 +1,58 @@
+Parte 4: Configuração de pastas e acesso remoto
+Liberar pasta para acesso
+Use o comando abaixo para permitir que outros usuários ou sistemas acessem a pasta de configuração:
+
+bash
+Copiar código
+
+sudo chmod -R 775 /srv/homeassistant
+sudo chown -R homeassistant:homeassistant /srv/homeassistant
+_____________________________________________________________
+Configurar acesso remoto via SSH como root
+a) Habilitar o login do root
+Edite o arquivo de configuração do SSH:
+
+bash
+Copiar código
+
+sudo nano /etc/ssh/sshd_config
+_____________________________________________________________
+Encontre a linha:
+
+plaintext
+Copiar código
+
+PermitRootLogin prohibit-password
+
+Altere para:
+
+plaintext
+Copiar código
+
+PermitRootLogin yes
+_____________________________________________________________
+b) Reiniciar o serviço SSH
+Após salvar, reinicie o serviço SSH:
+
+bash
+Copiar código
+
+sudo systemctl restart ssh
+_____________________________________________________________
+c) Definir uma senha para o root
+Caso ainda não tenha uma senha definida:
+
+bash
+Copiar código
+
+sudo passwd root
+_____________________________________________________________
+d) Acessar remotamente via SSH
+Use um cliente SSH como o PuTTY no Windows ou o terminal no Linux para acessar:
+
+bash
+Copiar código
+
+ssh root@<IP_DO_SEU_MINI_PC>
+
+Com esses passos, o Home Assistant estará instalado e configurado no seu mini PC com Debian, com acesso remoto habilitado e permissões de pasta configuradas. Se tiver dúvidas ou algo não funcionar como esperado, só perguntar! 😊
