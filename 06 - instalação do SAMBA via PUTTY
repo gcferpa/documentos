@@ -1,0 +1,102 @@
+1. Instalar o Samba
+Primeiro, instale o Samba no seu sistema:
+
+bash
+Copiar
+Editar
+
+sudo apt update
+sudo apt install samba -y
+______________________________________________________________________________________
+2. Configurar o Samba
+Edite o arquivo de configuração do Samba:
+
+bash
+Copiar
+Editar
+
+sudo nano /etc/samba/smb.conf
+
+Adicione as configurações de compartilhamento no final do arquivo, como este exemplo:
+
+ini
+Copiar
+Editar
+
+[Node-RED]
+path = /root/.node-red
+browseable = yes
+read only = no
+writable = yes
+guest ok = yes
+force user = nodered
+
+[Zigbee2MQTT]
+path = /opt/zigbee2mqtt
+browseable = yes
+read only = no
+writable = yes
+guest ok = yes
+force user = zigbee2mqtt
+
+[Home Assistant]
+path = /usr/share/hassio/homeassistant
+browseable = yes
+read only = no
+writable = yes
+guest ok = yes
+force user = homeassistant
+
+
+Substitua os caminhos reais para os diretórios do Node-RED, Zigbee2MQTT e Home Assistant.
+
+______________________________________________________________________________________
+3. Criar um Usuário do Samba
+Você pode criar um usuário para acesso ao Samba ou habilitar o acesso como "guest" (sem senha).
+
+Para criar um usuário Samba, use:
+
+bash
+Copiar
+Editar
+
+sudo smbpasswd -a <seu_usuario>
+
+Substitua <seu_usuario> pelo nome do usuário que deseja usar para acesso. Defina uma senha quando solicitado.
+ 
+______________________________________________________________________________________
+4. Reiniciar o Serviço Samba
+Após configurar, reinicie o serviço do Samba:
+
+bash
+Copiar
+Editar
+
+sudo systemctl restart smbd
+sudo systemctl enable smbd
+
+______________________________________________________________________________________
+5. Acessar pelo Navegador
+No seu computador, abra o navegador de arquivos (Windows Explorer, Finder, etc.) e insira:
+
+Copiar
+Editar
+
+\\192.168.1.160
+
+Você verá as pastas compartilhadas: Node-RED, Zigbee2MQTT e Home Assistant.
+
+______________________________________________________________________________________
+6. Testar e Ajustar Permissões
+Certifique-se de que as permissões nas pastas estão configuradas corretamente para o usuário Samba:
+
+bash
+Copiar
+Editar
+
+sudo chmod -R 775 /caminho/para/node-red
+sudo chmod -R 775 /opt/zigbee2mqtt
+sudo chmod -R 775 /caminho/para/homeassistant
+
+Garanta que o usuário ou grupo do Samba tenha acesso às pastas.
+
