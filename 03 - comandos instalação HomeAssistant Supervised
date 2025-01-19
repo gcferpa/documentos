@@ -1,0 +1,98 @@
+Passo 1: Preparar o Ambiente
+Atualize e prepare o sistema:
+bash
+Copiar código
+
+sudo apt update && sudo apt upgrade -y
+sudo apt install -y software-properties-common apt-transport-https ca-certificates wget
+________________________________________
+Passo 2: Instalar Dependências Necessárias
+Instale os pacotes obrigatórios para o funcionamento do Home Assistant Supervised:
+bash
+Copiar código
+
+sudo apt install -y apparmor jq wget curl udisks2 libglib2.0-bin network-manager dbus systemd-journal-remote cifs-utils nfs-common
+________________________________________
+Passo 3: Instalar o Docker
+O Docker é essencial para o Home Assistant Supervised. Instale-o com o script oficial:
+bash
+Copiar código
+curl -fsSL https://get.docker.com | sh
+Verifique se o Docker está funcionando:
+bash
+Copiar código
+
+docker --version
+________________________________________
+Passo 4: Instalar o OS Agent
+Baixe e instale o OS Agent, necessário para o Supervisor:
+bash
+Copiar código
+
+wget https://github.com/home-assistant/os-agent/releases/latest/download/os-agent_amd64.deb
+sudo dpkg -i os-agent_amd64.deb
+
+Corrija dependências se houver erros:
+bash
+Copiar código
+
+sudo apt --fix-broken install
+________________________________________
+Passo 5: Baixar e Instalar o Home Assistant Supervised
+Baixe o pacote .deb do Home Assistant Supervised:
+bash
+Copiar código
+
+wget https://github.com/home-assistant/supervised-installer/releases/latest/download/homeassistant-supervised.deb
+
+Instale o pacote:
+bash
+Copiar código
+
+sudo dpkg -i homeassistant-supervised.deb
+
+Se ocorrerem problemas de dependência, execute:
+bash
+Copiar código
+
+sudo apt --fix-broken install
+________________________________________
+Passo 6: Verificar o Serviço
+Verifique se o serviço do Supervisor está ativo:
+bash
+Copiar código
+
+sudo systemctl status hassio-supervisor.service
+
+Se não estiver ativo, inicie e habilite o serviço:
+bash
+Copiar código
+
+sudo systemctl start hassio-supervisor.service
+sudo systemctl enable hassio-supervisor.service
+________________________________________
+Passo 7: Verificar o Funcionamento
+Acesse o Home Assistant pelo navegador no endereço:
+plaintext
+Copiar código
+
+http://<IP_DO_SEU_SERVIDOR>:8123
+________________________________________
+Passo 8: Ajuste Opcional (Desativar ModemManager)
+Se você não usa modems, desative o ModemManager para evitar interferências:
+bash
+Copiar código
+
+sudo systemctl disable ModemManager
+sudo systemctl stop ModemManager
+________________________________________
+Notas Finais
+•	Use Debian Bookworm (12), pois é o sistema recomendado oficialmente.
+•	Certifique-se de que sua conexão de internet esteja funcionando bem.
+•	Caso surjam erros, verifique os logs do Supervisor com:
+bash
+Copiar código
+
+sudo journalctl -u hassio-supervisor.service
+Esse fluxo deve instalar o Home Assistant Supervised sem problemas. 
+
