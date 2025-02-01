@@ -1,0 +1,141 @@
+substitutions:
+  name: meu-esp32
+
+esphome:
+  name: ${name}
+  platform: ESP32
+  board: esp32dev
+  includes:
+    - pca9535.h  # Certifique-se de que este arquivo está na mesma pasta
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  ap:
+    ssid: "MeuESP32 Fallback Hotspot"
+    password: "fallback_password"
+
+logger:
+
+api:
+  encryption:
+    key: "fGcFemreJUrwn9fRr7NTLP7TjWp4J/bFeoLxXgK7dvk="
+
+ota:
+  platform: esphome
+  password: "5598a86c0eaa645ffa09c13e7f5bbbca"
+
+i2c:
+  sda: 21
+  scl: 22
+  scan: true
+
+custom_component:
+  - lambda: |-
+      auto pca9535 = new PCA9535(0x20);  // Instancia o PCA9535 no endereço 0x20
+      App.register_component(pca9535);
+      return {pca9535};
+    components:
+      - id: pca9535
+
+switch:
+  - platform: custom
+    lambda: |-
+      // Cast explícito para converter Component* em PCA9535*
+      auto *pca9535_device = static_cast<PCA9535*>(id(pca9535));
+      std::vector<Switch *> switches;
+      for (int i = 0; i < 16; i++) {
+        auto sw = new PCA9535Switch(pca9535_device, i);
+        App.register_component(sw);
+        switches.push_back(sw);
+      }
+      return switches;
+    switches:
+      - name: "Relé 1"
+      - name: "Relé 2"
+      - name: "Relé 3"
+      - name: "Relé 4"
+      - name: "Relé 5"
+      - name: "Relé 6"
+      - name: "Relé 7"
+      - name: "Relé 8"
+      - name: "Relé 9"
+      - name: "Relé 10"
+      - name: "Relé 11"
+      - name: "Relé 12"
+      - name: "Relé 13"
+      - name: "Relé 14"
+      - name: "Relé 15"
+      - name: "Relé 16"
+
+___________________________________________________________________________________
+pca9535.h
+
+#include "esphome.h"
+#include "Wire.h"
+
+class PCA9535 : public Component {
+ public:
+  PCA9535(uint8_t address) : address_(address) {}
+
+  void setup() override {
+    Wire.begin();
+    // Configure todos os pinos como saída (registradores 0x06 e 0x07)
+    Wire.beginTransmission(address_);
+    Wire.write(0x06);  // Registrador de configuração do Port 0
+    Wire.write(0x00);  // Todos os pinos do Port 0 como saída
+    Wire.write(0x00);  // Todos os pinos do Port 1 como saída (via auto-incremento)
+    Wire.endTransmission();
+
+    ESP_LOGD("custom", "PCA9535 iniciado com sucesso no endereço 0x%02X.", address_);
+  }
+
+  void write_pin(uint8_t pin, bool state) {
+    uint16_t current_state = read_all_pins();
+    // Atenção: se seu relé for acionado em nível baixo (ativo em baixa),
+    // a lógica abaixo está correta. Caso contrário, inverta-a.
+    if (state) {
+      current_state &= ~(1 << pin);
+    } else {
+      current_state |= (1 << pin);
+    }
+    write_all_pins(current_state);
+  }
+
+  uint16_t read_all_pins() {
+    Wire.beginTransmission(address_);
+    Wire.write(0x00);  // Lê os registradores de entrada (0x00 e 0x01)
+    Wire.endTransmission();
+    Wire.requestFrom(address_, (uint8_t)2);
+    if (Wire.available() < 2) return 0xFFFF;
+    uint8_t low_byte = Wire.read();
+    uint8_t high_byte = Wire.read();
+    return (high_byte << 8) | low_byte;
+  }
+
+  void write_all_pins(uint16_t state) {
+    Wire.beginTransmission(address_);
+    Wire.write(0x02);  // Inicia na posição dos registradores de saída
+    Wire.write(state & 0xFF);
+    Wire.write((state >> 8) & 0xFF);
+    Wire.endTransmission();
+  }
+
+ private:
+  uint8_t address_;
+};
+
+class PCA9535Switch : public Switch, public Component {
+ public:
+  PCA9535Switch(PCA9535 *parent, uint8_t pin) : parent_(parent), pin_(pin) {}
+
+  void write_state(bool state) override {
+    parent_->write_pin(pin_, state);
+    publish_state(state);
+  }
+
+ private:
+  PCA9535 *parent_;
+  uint8_t pin_;
+};
