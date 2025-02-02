@@ -6,7 +6,7 @@ esphome:
   platform: ESP32
   board: esp32dev
   includes:
-    - pca9535.h  # Certifique-se de que este arquivo está na mesma pasta
+    - pca9535.h  # Certifique-se de que este arquivo (atualizado conforme a Opção 1) está na mesma pasta
 
 wifi:
   ssid: !secret wifi_ssid
@@ -30,6 +30,10 @@ i2c:
   sda: 21
   scl: 22
   scan: true
+
+mqtt:
+  broker: "192.168.1.160"   # Altere para o IP ou hostname do seu broker (sem autenticação)
+  topic_prefix: "meu-esp32"   # Prefixo para os tópicos do dispositivo
 
 custom_component:
   - lambda: |-
@@ -70,8 +74,6 @@ switch:
       - name: "Relé 16"
 
 ___________________________________________________________________________________
-pca9535.h
-
 #include "esphome.h"
 #include "Wire.h"
 
@@ -81,31 +83,30 @@ class PCA9535 : public Component {
 
   void setup() override {
     Wire.begin();
-    // Configure todos os pinos como saída (registradores 0x06 e 0x07)
+    // Configurar todos os pinos como saída (registradores 0x06 e 0x07)
     Wire.beginTransmission(address_);
     Wire.write(0x06);  // Registrador de configuração do Port 0
-    Wire.write(0x00);  // Todos os pinos do Port 0 como saída
-    Wire.write(0x00);  // Todos os pinos do Port 1 como saída (via auto-incremento)
+    Wire.write(0x00);  // Define todos os pinos do Port 0 como saída
+    Wire.write(0x00);  // Define todos os pinos do Port 1 como saída (via auto-incremento)
     Wire.endTransmission();
 
     ESP_LOGD("custom", "PCA9535 iniciado com sucesso no endereço 0x%02X.", address_);
   }
 
+  // Lógica alterada para que: switch ligado => pino em nível alto (LED aceso)
   void write_pin(uint8_t pin, bool state) {
     uint16_t current_state = read_all_pins();
-    // Atenção: se seu relé for acionado em nível baixo (ativo em baixa),
-    // a lógica abaixo está correta. Caso contrário, inverta-a.
     if (state) {
-      current_state &= ~(1 << pin);
+      current_state |= (1 << pin);   // Se ligado, seta o bit (nível alto)
     } else {
-      current_state |= (1 << pin);
+      current_state &= ~(1 << pin);  // Se desligado, limpa o bit (nível baixo)
     }
     write_all_pins(current_state);
   }
 
   uint16_t read_all_pins() {
     Wire.beginTransmission(address_);
-    Wire.write(0x00);  // Lê os registradores de entrada (0x00 e 0x01)
+    Wire.write(0x00);  // Leitura dos registradores de entrada
     Wire.endTransmission();
     Wire.requestFrom(address_, (uint8_t)2);
     if (Wire.available() < 2) return 0xFFFF;
@@ -116,7 +117,7 @@ class PCA9535 : public Component {
 
   void write_all_pins(uint16_t state) {
     Wire.beginTransmission(address_);
-    Wire.write(0x02);  // Inicia na posição dos registradores de saída
+    Wire.write(0x02);  // Endereço dos registradores de saída
     Wire.write(state & 0xFF);
     Wire.write((state >> 8) & 0xFF);
     Wire.endTransmission();
